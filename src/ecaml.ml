@@ -138,7 +138,6 @@ let inhibit_read_only = Current_buffer.inhibit_read_only
 let () =
   if not am_running_inline_test
   then
-    let module Unix = Core_unix in
     let should_reopen_stdin = ref true in
     Background.Clock.every [%here] Time.Span.second (fun () ->
       match Unix.fstat Unix.stdin with
@@ -167,7 +166,7 @@ let () =
 Close file descriptor zero, aka stdin.  For testing a bug in `call-process-region'.
 |}
     ~interactive:No_arg
-    (fun () -> Core_unix.(close stdin))
+    (fun () -> Unix.(close stdin))
 ;;
 
 let () =
@@ -301,7 +300,6 @@ module Ref = struct
     Monitor.protect
       ~run:
         `Schedule
-      ~rest:`Log
       f
       ~finally:(fun () ->
         r := old;

@@ -35,6 +35,7 @@ static emacs_env *active_env = NULL;
   do {                                                                        \
     static const value *name = NULL;                                          \
     if (name == NULL) {                                                       \
+      fprintf(stderr, "caml_named_value(\"%s\") created.\n", #name);          \
       name = caml_named_value(#name);                                         \
       if (name == NULL) {                                                     \
         fprintf(stderr, "caml_named_value(\"%s\") returned NULL!\n", #name);  \
@@ -55,8 +56,8 @@ static emacs_env *active_env = NULL;
 emacs_env* ecaml_active_env_or_die()
 {
   if (active_env == NULL) {
-    CAML_NAMED_CALLBACK_I(no_active_env, 1, Val_unit);
-    exit(1);
+      CAML_NAMED_CALLBACK_I(no_active_env, 1, Val_unit);
+      exit(1);
   }
   return active_env;
 }

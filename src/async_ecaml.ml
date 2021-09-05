@@ -13,9 +13,9 @@ open! Core
 open! Import
 module Ivar = Async.Ivar
 module Mutex = Error_checking_mutex
-module Thread = Caml_threads.Thread
-module Time = Time_unix
-module Unix = Core_unix
+module Thread = Core.Thread
+module Time = Core.Time
+module Unix = Core.Unix
 module Scheduler = Async_unix.Async_unix_private.Raw_scheduler
 
 let message_s = message_s
@@ -302,7 +302,7 @@ module Block_on_async = struct
       type t =
         { here : Source_code_position.t
         ; context : Sexp.t Lazy.t
-        ; created_at : Time_ns_unix.t opaque_in_test
+        ; created_at : Core.Time_ns.t opaque_in_test
         }
       [@@deriving sexp_of]
     end
@@ -474,7 +474,7 @@ let lock_async_during_module_initialization () =
 ;;
 
 let max_inter_cycle_timeout = Time_ns.Span.second
-
+let lock_cycle = ref 0
 let start_scheduler () =
   match !Scheduler_status.status with
   | Stopped -> raise_s [%sexp "Async has been shut down and cannot be restarted"]
@@ -491,6 +491,7 @@ let start_scheduler () =
     <- Some (fun () -> raise_s [%message "BUG in Async_ecaml" [%here]]);
     let scheduler_thread =
       Thread.create
+        ~on_uncaught_exn:`Print_to_stderr
         (fun () ->
            match Scheduler.go () ~raise_unhandled_exn:true with
            | _ -> .
@@ -504,7 +505,14 @@ let start_scheduler () =
     (* We set [have_lock_do_cycle] as early as possible so that the Async scheduler runs
        cycles in the desired way, even if later parts of initialization raise. *)
     t.scheduler.have_lock_do_cycle
-    <- Some (request_emacs_run_cycle (Thread.id scheduler_thread));
+    <- Some (
+      fun () ->
+        incr lock_cycle;
+        if (!lock_cycle % 3 = 0) then
+          request_emacs_run_cycle (Thread.id scheduler_thread) ()
+        else
+          ()
+    );
     Defun.defun
       Q.ecaml_async_take_lock_do_cycle
       [%here]

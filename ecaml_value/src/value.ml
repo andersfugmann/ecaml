@@ -529,6 +529,7 @@ let to_array_exn (t : t) ~f =
 let vector arr = funcallN_array Q.vector arr
 
 let non_local_exit_signal exn =
+  Stdlib.Printf.eprintf("Right here%!\n");
   let module M = struct
     (** [non_local_exit_signal] sets a [pending_error] flag in the Emacs environment that
         causes it to, after our C code returns to it, signal instead of returning a

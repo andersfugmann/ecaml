@@ -139,7 +139,7 @@ module Programmed_completion = struct
       let metadatum_type = Value.Type.(tuple Symbol.t Function.t) in
       let f ~arg ~returns field _t f =
         let%map.Option f = f in
-        let name = Enum.Single.to_string_hum (module String) (Field.name field) in
+        let name = Enum.to_string_hum (module struct include String let all = [Field.name field] end) (Field.name field) in
         let function_ =
           Defun.lambda
             [%here]

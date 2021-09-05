@@ -4,12 +4,12 @@ open! Import
 
 module Expect_test_config :
   Expect_test_config_types.S
-  with type 'a IO_flush.t = 'a
+  with type 'a IO_flush.t = 'a Deferred.t
    and type 'a IO_run.t = 'a Deferred.t
 
 module Expect_test_config_allowing_nested_block_on_async :
   Expect_test_config_types.S
-  with type 'a IO_flush.t = 'a
+  with type 'a IO_flush.t = 'a Deferred.t
    and type 'a IO_run.t = 'a Deferred.t
 
 module Export : sig

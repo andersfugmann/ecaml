@@ -139,7 +139,6 @@ let with_temp_buffer f =
   let temp_buffer = create ~name:" *temp*" in
   Monitor.protect
     ~run:`Schedule
-    ~rest:`Log
     (fun () -> f temp_buffer)
     ~finally:(fun () ->
       match%map
